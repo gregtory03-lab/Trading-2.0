@@ -22,10 +22,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error: any) {
+        console.error('Session recovery error:', {
+          message: error.message,
+          status: error.status,
+          code: error.code,
+        });
+        // Treat errors gracefully - user is not authenticated
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    getSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
