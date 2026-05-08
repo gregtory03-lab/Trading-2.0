@@ -61,15 +61,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Password must be at least 6 characters');
     }
 
-    const redirectUrl = `${window.location.origin}/`;
-    const result = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const result = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+      
+      if (result.error) {
+        console.error('Signup error:', result.error);
+        throw result.error;
       }
-    });
-    return result;
+      
+      return result;
+    } catch (error: any) {
+      console.error('Signup exception:', {
+        message: error.message,
+        status: error.status,
+        code: error.code,
+        details: error
+      });
+      
+      // Provide more helpful error message
+      if (error.status === 404 || error.code === 'NOT_FOUND') {
+        throw new Error('Signup service unavailable. Please check your internet connection or try again later. If the problem persists, please contact support.');
+      }
+      
+      throw error;
+    }
   };
 
   const signOut = async () => {
