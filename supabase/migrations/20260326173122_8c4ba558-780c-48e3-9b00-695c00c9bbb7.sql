@@ -1,0 +1,1 @@
+ALTER TABLE public.wallet_balances REPLICA IDENTITY FULL;
